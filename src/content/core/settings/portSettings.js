@@ -280,6 +280,11 @@ export async function importSettings() {
                             return;
                         }
 
+                        // PRIVATE BUILD: never accept the 40% method target
+                        // from a file; a foreign place ID would send the
+                        // purchase commission to someone else's game.
+                        delete sanitizedSettings.RobuxPlaceId;
+
                         const userTier = getCurrentUserTier();
                         for (const key in sanitizedSettings) {
                             const config = findSettingConfig(key);

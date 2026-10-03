@@ -1590,7 +1590,14 @@ async function injectCustomButtons(toggleButton) {
                     'You are about to be redirected to an external website which may have different privacy policies than Roblox. Do you want to continue?',
                 confirmText: 'Continue',
                 onConfirm: () => {
-                    window.open(environmentConfig.tooltip.link, '_blank');
+                    let link;
+                    try {
+                        link = new URL(environmentConfig.tooltip.link);
+                    } catch {
+                        return;
+                    }
+                    if (!['http:', 'https:'].includes(link.protocol)) return;
+                    window.open(link.href, '_blank', 'noopener');
                 },
             });
         });

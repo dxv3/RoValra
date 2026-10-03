@@ -10,6 +10,7 @@ import { getAssets } from '../../core/assets.js';
 import { addTooltip } from '../../core/ui/tooltip.js';
 import { RISK_COLORS } from '../../core/trade/riskCalculator.js';
 import { ts } from '../../core/locale/i18n.js';
+import { htmlEncode } from '../../core/utils/sanitize.js';
 
 let featureSettings = { itemTradingEnabled: true, tradeRiskEnabled: true };
 let isInitialized = false;
@@ -50,7 +51,7 @@ function updateInfo(parent, referenceElement, assetId) {
     const assets = getAssets();
     const rows = [];
 
-    const value = data.default_price || data.rap || 0;
+    const value = Number(data.default_price || data.rap) || 0;
     const valueHtml = `
         <span style="display: flex; align-items: center;">
             <img src="${assets.rolimonsIcon}" style="width: 16px; height: 16px; margin-right: 6px;">
@@ -72,15 +73,15 @@ function updateInfo(parent, referenceElement, assetId) {
     rows.push(valueRow);
 
     if (data.demand) {
-        rows.push(createRow(ts('trading.demandLabel'), data.demand));
+        rows.push(createRow(ts('trading.demandLabel'), htmlEncode(String(data.demand))));
     }
 
     if (data.trend) {
-        rows.push(createRow('Trend', data.trend));
+        rows.push(createRow('Trend', htmlEncode(String(data.trend))));
     }
 
     if (data.acronym) {
-        rows.push(createRow('Acronym', data.acronym));
+        rows.push(createRow('Acronym', htmlEncode(String(data.acronym))));
     }
 
     if (featureSettings.tradeRiskEnabled) {

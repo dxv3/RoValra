@@ -6,7 +6,13 @@ const API_KEY_NAME = 'RoValra API key';
 const API_KEY_DESCRIPTION =
     'RoValra API key, used for local API requests only.\nNever used outside your local device.';
 
+// PRIVATE BUILD: never create, regenerate or store an Open Cloud API key on
+// the account. Callers already handle a null key (same as accounts that
+// cannot use API keys).
+const PRIVATE_BUILD_DISABLE_API_KEY = true;
+
 export async function getValidApiKey() {
+    if (PRIVATE_BUILD_DISABLE_API_KEY) return null;
     const userId = await getAuthenticatedUserId();
     if (!userId) return null;
 

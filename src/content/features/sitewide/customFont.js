@@ -67,6 +67,24 @@ function applyCustomFont(input) {
 
     const { importUrl, fontFamily } = resolved;
 
+    // Both values are written into CSS: reject anything that could break out
+    // of the url('...') or the quoted font-family string.
+    let parsedImportUrl;
+    try {
+        parsedImportUrl = new URL(importUrl);
+    } catch {
+        return;
+    }
+    if (
+        parsedImportUrl.protocol !== 'https:' ||
+        parsedImportUrl.hostname !== 'fonts.googleapis.com' ||
+        /['"()\\\s<>]/.test(importUrl) ||
+        (fontFamily && !/^[A-Za-z0-9 _-]+$/.test(fontFamily))
+    ) {
+        console.warn('[RoValra] customFont: Rejected unsafe font input:', input);
+        return;
+    }
+
     const style = document.createElement('style');
     style.id = 'rovalra-custom-font';
     style.textContent = `

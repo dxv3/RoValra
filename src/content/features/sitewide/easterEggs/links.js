@@ -13,18 +13,8 @@ function handleCatsPage() {
         const catImagePromises = [];
 
         for (let i = 0; i < numberOfCats; i++) {
-            catImagePromises.push(
-                fetch('https://api.thecatapi.com/v1/images/search') // Verified
-                    .then(response => {
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        return response.json();
-                    })
-                    .then(data => (data && data.length > 0 && data[0].url) ? data[0].url : null)
-                    .catch(error => {
-                        console.error("Error fetching cat image:", error);
-                        return null;
-                    })
-            );
+            // PRIVATE BUILD: no third-party cat API request.
+            catImagePromises.push(Promise.resolve(null));
         }
 
         Promise.all(catImagePromises).then(catImageUrls => {

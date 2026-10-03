@@ -287,6 +287,12 @@ function normalizeText(s) {
 }
 
 function extractCountryCode(regionName) {
+    // Country codes are used inside HTML, so only accept a plain 2-letter code
+    const code = findCountryCode(regionName);
+    return typeof code === 'string' && /^[a-z]{2}$/.test(code) ? code : null;
+}
+
+function findCountryCode(regionName) {
     if (!regionName || !datacenterList?.length) return null;
 
     const parts = regionName.split(',').map((p) => p.trim());

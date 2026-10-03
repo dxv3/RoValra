@@ -59,8 +59,17 @@ function formatUIMarkdown(assetId: number, productId: number, taxonomy: Array<{t
         : [];
 
     let resultMarkdown = popupMarkdown;
+    // Item names come from Roblox creators: escape before they enter markdown
+    const escapeCell = (value: unknown) =>
+        String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/\|/g, '&#124;');
     const copyableId = (id: string | number) =>
-        `<span class="rovalra-viewid-single-copy" data-copy-value="${String(id)}">${String(id)}</span>`;
+        `<span class="rovalra-viewid-single-copy" data-copy-value="${escapeCell(id)}">${escapeCell(id)}</span>`;
 
     resultMarkdown = resultMarkdown.replaceAll("{{assetid}}", copyableId(assetId));
     resultMarkdown = resultMarkdown.replaceAll("{{productid}}", copyableId(productId));
@@ -68,7 +77,7 @@ function formatUIMarkdown(assetId: number, productId: number, taxonomy: Array<{t
     let taxonomyMarkdown = "";
     for (let i = 0; i < taxonomy.length; i++) {
         const item = taxonomy[i];
-        taxonomyMarkdown += `| ${i} | ${item.taxonomyName} | ${copyableId(item.taxonomyId)} |\n`;
+        taxonomyMarkdown += `| ${i} | ${escapeCell(item.taxonomyName)} | ${copyableId(item.taxonomyId)} |\n`;
     }
     if (taxonomy.length === 0)
         taxonomyMarkdown = `| | | |\n`;
@@ -77,7 +86,7 @@ function formatUIMarkdown(assetId: number, productId: number, taxonomy: Array<{t
     let bundledMarkdown = "";
     for (let i = 0; i < bundledItems.length; i++) {
         const item = bundledItems[i];
-        bundledMarkdown += `| ${i} | ${item.name} | ${item.type} | ${copyableId(item.id)} |\n`;
+        bundledMarkdown += `| ${i} | ${escapeCell(item.name)} | ${escapeCell(item.type)} | ${copyableId(item.id)} |\n`;
     }
     if (bundledItems.length === 0)
         bundledMarkdown = `| | | | |\n`;

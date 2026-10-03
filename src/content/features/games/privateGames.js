@@ -1978,11 +1978,20 @@ async function updateSocialLinksUI(cloudData, retryCount = 0) {
         'display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0;';
     container.innerHTML = '';
     socialLinks.forEach((link) => {
+        // Creator-supplied link: only allow http(s), never javascript:/data:
+        let safeUri;
+        try {
+            safeUri = new URL(link.uri);
+        } catch {
+            return;
+        }
+        if (!['http:', 'https:'].includes(safeUri.protocol)) return;
+
         const li = document.createElement('li');
         li.style.cssText = 'display: flex;';
         const a = document.createElement('a');
         a.className = 'btn-secondary-lg border';
-        a.href = link.uri;
+        a.href = safeUri.href;
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
         a.innerHTML = DOMPurify.sanitize(`

@@ -411,6 +411,14 @@ async function callRobloxApiBackground(options) {
         }
         url = parsedUrl.toString();
     } else {
+        if (
+            typeof subdomain !== 'string' ||
+            !/^[a-z0-9-]+$/i.test(subdomain) ||
+            typeof endpoint !== 'string' ||
+            !endpoint.startsWith('/')
+        ) {
+            throw new Error('Invalid subdomain or endpoint for background fetch');
+        }
         url = `https://${subdomain}.roblox.com${endpoint}`;
     }
 
@@ -2165,16 +2173,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 .then((state) => sendResponse({ state }))
                 .catch((error) => sendResponse({ error: error.message }));
             return true;
-        case 'fetchJson':
-            fetch(request.url)
-                .then((res) => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.json();
-                })
-                .then((data) => sendResponse({ data }))
-                .catch((err) => sendResponse({ error: err.message }));
-            return true;
-
         case 'updateOfflineRule':
             chrome.declarativeNetRequest.updateEnabledRulesets(
                 request.enabled

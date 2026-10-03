@@ -36,7 +36,12 @@ function clickWhenReady(button, productId) {
     );
 }
 
+// PRIVATE BUILD: a link carrying "?RoValra-Auto-Buy" must never press a buy
+// button on its own. The user always clicks Buy themselves.
+const PRIVATE_BUILD_DISABLE_AUTO_BUY = true;
+
 export function init() {
+    if (PRIVATE_BUILD_DISABLE_AUTO_BUY) return;
     if (
         !window.location.pathname.includes('/developer-product/') ||
         !window.location.search.includes('RoValra-Auto-Buy')

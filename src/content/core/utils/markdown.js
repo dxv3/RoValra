@@ -20,7 +20,12 @@ export function parseMarkdown(text, themeColors = {}) {
         breaks: true,
     });
 
-    return `<div class="rovalra-markdown">${marked.parse(processedText)}</div>`;
+    // PRIVATE BUILD: always sanitize, even for "trusted" markdown, so a caller
+    // that mixes in Roblox user content can never inject markup or scripts.
+    return DOMPurify.sanitize(
+        `<div class="rovalra-markdown">${marked.parse(processedText)}</div>`,
+        CUSTOM_ADDED_TAGS,
+    );
 }
 
 /**

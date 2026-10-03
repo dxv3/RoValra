@@ -11,7 +11,12 @@ import * as cache from '../storage/cacheHandler.js';
 
 let activeOAuthPromise = null;
 
+// PRIVATE BUILD: RoValra account linking is disabled. No OAuth authorization
+// is granted on the Roblox account and no fallback verification flow runs.
+const PRIVATE_BUILD_DISABLE_OAUTH = true;
+
 export async function init() {
+    if (PRIVATE_BUILD_DISABLE_OAUTH) return;
     try {
         console.log('RoValra: Script loaded. Syncing session...');
 
@@ -56,6 +61,7 @@ export async function getValidAccessToken(
     forceRefresh = false,
     lazyForNonDonators = true,
 ) {
+    if (PRIVATE_BUILD_DISABLE_OAUTH) return null;
     const userId = await getAuthenticatedUserId();
     if (!userId) return null;
 

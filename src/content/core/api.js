@@ -23,6 +23,35 @@ const TEMPORARILY_LIMITED_MESSAGE =
 const OAUTH_STORAGE_KEY = 'rovalra_oauth_verification';
 let cachedRovalraUserAgent = null;
 
+// PRIVATE BUILD: every request to *.rovalra.com is blocked unless its
+// "subdomain:pathPrefix" is listed here. Allowed requests are GET-only and
+// never carry an auth token or cookies. Example: 'apis:/v1/datacenters/list'
+const ROVALRA_API_ALLOWLIST = [];
+
+function isRovalraRequestAllowed({ subdomain = 'apis', endpoint, method = 'GET' }) {
+    if (method.toUpperCase() !== 'GET' || typeof endpoint !== 'string') {
+        return false;
+    }
+    const path = endpoint.split('?')[0];
+    return ROVALRA_API_ALLOWLIST.some((entry) => {
+        const [allowedSubdomain, allowedPrefix] = entry.split(/:(.*)/s);
+        return allowedSubdomain === subdomain && path.startsWith(allowedPrefix);
+    });
+}
+
+function createBlockedRovalraResponse() {
+    return new Response(
+        JSON.stringify({
+            errors: [{ code: 503, message: 'Blocked by private build' }],
+        }),
+        {
+            status: 503,
+            statusText: 'Blocked by private build',
+            headers: { 'Content-Type': 'application/json' },
+        },
+    );
+}
+
 const hbaClient = new HBAClient({
     onSite: true,
 });
@@ -335,6 +364,29 @@ export function resetGameJoinErrorCount() {
 }
 
 export async function callRobloxApi(options) {
+    if (options.fullUrl) {
+        let fullUrlHost = '';
+        try {
+            fullUrlHost = new URL(options.fullUrl).hostname;
+        } catch {}
+        if (fullUrlHost === 'rovalra.com' || fullUrlHost.endsWith('.rovalra.com')) {
+            return createBlockedRovalraResponse();
+        }
+    }
+
+    if (options.isRovalraApi) {
+        if (!isRovalraRequestAllowed(options)) {
+            return createBlockedRovalraResponse();
+        }
+        options = {
+            ...options,
+            skipAutoAuth: true,
+            useApiKey: false,
+            useBackground: false,
+            credentials: 'omit',
+        };
+    }
+
     if (options.subdomain === 'gamejoin') {
         options = {
             ...options,
@@ -992,6 +1044,13 @@ export async function callRobloxApiUnsafe(options) {
 export async function checkUrlStatus(url, options = {}) {
     const { method = 'GET', signal, expectNoRedirect = false } = options;
     try {
+        const { hostname, protocol } = new URL(url, location.href);
+        if (
+            protocol !== 'https:' ||
+            !(hostname === 'roblox.com' || hostname.endsWith('.roblox.com'))
+        ) {
+            throw new Error(`checkUrlStatus blocked non-Roblox URL: ${url}`);
+        }
         const fetchOptions = {
             method,
             signal,
